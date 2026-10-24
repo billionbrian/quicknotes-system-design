@@ -1,0 +1,134 @@
+
+ 5. `docs/data-model.md`
+
+````markdown
+ QuickNotes Data Model
+
+ 1. Database choice
+
+QuickNotes will use PostgreSQL, a relational SQL database.
+
+Notes, users, tags, and note-tag associations have clear relationships.
+The application needs foreign-key constraints, transactions, reliable
+updates, unique email addresses, and flexible querying.
+
+PostgreSQL supports these requirements and can scale through indexing,
+read replicas, connection pooling, and vertical or horizontal
+architectural improvements.
+
+ 2. Entities and columns
+
+ Users
+
+| Column | Type | Key / constraint |
+|---|---|---|
+| id | BIGINT GENERATED ALWAYS AS IDENTITY | Primary key |
+| name | VARCHAR(100) | NOT NULL |
+| email | VARCHAR(255) | NOT NULL, UNIQUE |
+| password_hash | VARCHAR(255) | NOT NULL |
+| created_at | TIMESTAMPTZ | NOT NULL |
+| updated_at | TIMESTAMPTZ | NOT NULL |
+
+ Notes
+
+| Column | Type | Key / constraint |
+|---|---|---|
+| id | BIGINT GENERATED ALWAYS AS IDENTITY | Primary key |
+| user_id | BIGINT | Foreign key to users.id |
+| title | VARCHAR(100) | NOT NULL |
+| body | TEXT | NOT NULL, default empty string |
+| created_at | TIMESTAMPTZ | NOT NULL |
+| updated_at | TIMESTAMPTZ | NOT NULL |
+
+ Tags
+
+| Column | Type | Key / constraint |
+|---|---|---|
+| id | BIGINT GENERATED ALWAYS AS IDENTITY | Primary key |
+| user_id | BIGINT | Foreign key to users.id |
+| name | VARCHAR(50) | NOT NULL |
+| created_at | TIMESTAMPTZ | NOT NULL |
+
+A user cannot create duplicate tag names within their own account.
+
+ Note_tags
+
+| Column | Type | Key / constraint |
+|---|---|---|
+| note_id | BIGINT | Primary key component; FK to notes.id |
+| tag_id | BIGINT | Primary key component; FK to tags.id |
+| created_at | TIMESTAMPTZ | NOT NULL |
+
+The composite primary key `(note_id, tag_id)` prevents the same tag
+from being attached to the same note more than once.
+  
+ 3. Relationships
+
+ One-to-many: users and notes
+
+One user can own many notes, but each note belongs to exactly one user.
+
+`users.id -> notes.user_id`
+  
+ One-to-many: users and tags
+
+One user can create many tags, but each tag belongs to one user.
+
+`users.id -> tags.user_id`
+
+Many-to-many: notes and tags
+
+A note can have multiple tags, and a tag can be associated with
+multiple notes.
+
+The `note_tags` junction table implements this relationship:
+
+`notes.id -> note_tags.note_id`
+
+`tags.id -> note_tags.tag_id`
+
+The application must verify that a note and tag belong to the same
+user before creating an association.
+
+## 4. CREATE TABLE statements
+
+```sql
+CREATE TABLE users (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE notes (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id)
+        ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL
+        CHECK (length(trim(title)) > 0),
+    body TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tags (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id)
+        ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL
+        CHECK (length(trim(name)) > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_tag_name UNIQUE (user_id, name),
+    CONSTRAINT unique_tag_owner_pair UNIQUE (user_id, id)
+);
+
+CREATE TABLE note_tags (
+    note_id BIGINT NOT NULL REFERENCES notes(id)
+        ON DELETE CASCADE,
+    tag_id BIGINT NOT NULL REFERENCES tags(id)
+        ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (note_id, tag_id)
+);
