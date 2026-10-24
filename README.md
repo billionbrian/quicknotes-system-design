@@ -1,1 +1,0 @@
-# quicknotes-system-design
