@@ -1,0 +1,168 @@
+# QuickNotes System Design
+
+QuickNotes is a note-management application designed to demonstrate
+front-end API integration and the architecture of a scalable online
+service.
+
+This project combines a working browser-based API client with
+backend design documentation for a service intended to support
+one million registered users.
+
+## Project objectives
+
+- Retrieve notes from an API using GET.
+- Create notes using POST.
+- Delete notes using DELETE.
+- Validate user input and handle HTTP errors.
+- Design a RESTful API for a production note-management service.
+- Model relational data using SQL.
+- Estimate system capacity and document a scalable architecture.
+
+## Technology stack
+
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Fetch API
+- JSONPlaceholder practice API
+- PostgreSQL for the proposed production backend
+- Mermaid for the architecture diagram
+- Git and GitHub for version control
+
+## Project structure
+
+```text
+quicknotes-system-design/
+├── index.html
+├── api.js
+├── style.css
+├── README.md
+└── docs/
+    ├── api-design.md
+    ├── data-model.md
+    └── architecture.md
+```
+
+## How to run the API client
+
+### Requirements
+
+- A modern web browser.
+- An internet connection.
+- A local HTTP server, such as the VS Code Live Server extension
+  or Python's built-in HTTP server.
+
+### Option 1: Python HTTP server
+
+Open a terminal in the project root and run:
+
+```bash
+python -m http.server 8000
+```
+
+If your system uses `python3`, run:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open the following address in your browser:
+
+`http://localhost:8000`
+
+### Option 2: VS Code Live Server
+
+1. Open the project folder in VS Code.
+2. Install the Live Server extension if necessary.
+3. Right-click `index.html`.
+4. Select **Open with Live Server**.
+
+### Test the client
+
+1. Click **Load notes**.
+2. Confirm that up to ten notes appear.
+3. Enter a title and optional body, then click **Create note**.
+4. Confirm that the created note appears at the top of the list.
+5. Click a note's **Delete** button.
+6. Submit the form without a title and verify that validation works.
+7. Disconnect from the internet or simulate a failed request to
+   observe the error state.
+
+## API client limitations
+
+The front end uses:
+
+`https://jsonplaceholder.typicode.com/posts`
+
+JSONPlaceholder is a practice API. POST and DELETE requests simulate
+successful operations but do not permanently modify the underlying
+dataset. Created notes are maintained in the browser's in-memory list
+for the demonstration and can disappear when notes are reloaded.
+
+The production API described in the design documents is a separate
+proposed service. It requires a real backend, authentication,
+authorization, and a persistent database.
+
+## Design documents
+
+- [REST API Design](docs/api-design.md)
+- [Database Data Model](docs/data-model.md)
+- [System Architecture](docs/architecture.md)
+
+## What I learned
+
+1. **HTTP and API integration:** How to use GET, POST, and DELETE
+   requests with JavaScript's Fetch API, inspect response status codes,
+   and handle failures.
+
+2. **Asynchronous programming:** How async/await, try/catch/finally,
+   and disabled buttons help manage network requests and user feedback.
+
+3. **Input validation and security:** Why required fields, length
+   limits, safe DOM text insertion, authentication, and ownership
+   checks matter.
+
+4. **REST API design:** How HTTP methods, resource paths, status codes,
+   pagination, and JSON response structures form a consistent contract.
+
+5. **Relational database design:** How primary keys, foreign keys,
+   one-to-many relationships, many-to-many relationships, and indexes
+   support data integrity and query performance.
+
+6. **System design and scalability:** How stateless application
+   servers, load balancing, caching, database replicas, queues, and
+   workers support a growing service.
+
+7. **Capacity estimation:** How daily active users and activity
+   assumptions can be translated into average and peak requests per
+   second and annual storage requirements.
+
+8. **Trade-offs and reliability:** Why caching can create stale reads,
+   why replicas can lag, and why redundancy, monitoring, backups, and
+   tested failover procedures matter.
+
+## Git history
+
+The project should contain at least five meaningful commits. The
+following sequence separates the major deliverables:
+
+1. `Add API client with GET`
+2. `Add create note with POST`
+3. `Add delete with DELETE`
+4. `Add API design doc`
+5. `Add data model doc`
+6. `Add architecture doc`
+7. `Add README`
+
+## Future improvements
+
+- Implement a production backend using Node.js and Express.
+- Add PostgreSQL persistence and database migrations.
+- Implement registration, login, and token-based authentication.
+- Add pagination, filtering, and tag management.
+- Add automated tests for API endpoints and validation.
+- Introduce monitoring, load testing, and database backup automation.
+
+## Author
+
+Prepared as a web foundations and system design learning project.
